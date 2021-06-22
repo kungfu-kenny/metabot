@@ -12,6 +12,10 @@ from config import (description,
                     folder_config,
                     json_name,
                     json_keys_default,
+                    ifd_first,
+                    ifd_gps,
+                    ifd_exif,
+                    ifd_zeroth,
                     args_deletion_necessary,
                     args_analyse_pictures,
                     args_change_meta,
@@ -152,13 +156,33 @@ class ImageParser:
             if 'Image ' in key_exif:
                 val_exif = value_exif.pop(key_exif)
                 value_exif[key_exif.replace('Image ', '')] = val_exif
-            #TODO think what to do with this type of the data
             if 'Thumbnail ' in key_exif:
                 value_exif.pop(key_exif)
         value_pil.update(value_exif)
         pprint(value_pil)
-        print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-        return value_pil
+        print()
+        # return value_pil
+
+    @staticmethod
+    def parse_json_update(value_location:str) -> dict:
+        """
+        Static which is dedicated to return new dictionary for the insertion of the metadata
+        Input:  value_location = location to the json file to create the new one
+        Output: dictionary to insert as new exif
+        """
+        value_dict = json.load(open(value_location))
+        value_return = {}
+        for keys, values in value_dict.items():
+            if values:
+                new_value = {int(key):value for key, value in values.items()}
+            else:
+                new_value = values
+            value_return[keys] = new_value
+
+        pprint(value_dict)
+        print('+++++++++++++++++++++++++++++++++++++++++++++')
+        pprint(value_return)
+        return value_dict
 
     def produce_file_update(self, value_file:str) -> None:
         """
@@ -166,13 +190,17 @@ class ImageParser:
         Input:  value_file = file name of the input
         Output: saved image without any exif values to the output
         """
-        import pickle
-
+        exif_dict = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st": ifd_first, "thumbnail": None}
+        # pprint(exif_dict)
+        # print('==============================================================')
+        exif_dict_ = self.parse_json_update(os.path.join(self.folder_config, json_name))
+        # pprint(value_json)
+        # print('################################################################')
+        # pprint(value_json)
+        exif_bytes = piexif.dump(exif_dict)
         
-        exif_dict = piexif.load(os.path.join(self.folder_input, value_file))
-        new_exif = piexif.adjust_exif(exif_dict)
-        # exif_bytes = piexif.dump(new_exif)
-        # piexif.insert(exif_bytes, path)
+        im = Image.open(os.path.join(self.folder_input, value_file))
+        im.save(os.path.join(self.folder_output, value_file), exif=exif_bytes)
 
     def produce_file_delete(self, value_file:str) -> None:
         """
@@ -199,9 +227,12 @@ class ImageParser:
         for value_file in value_files:
             print(value_file)
             if self.argparse.analyse:
+                #TODO think what to do with the analysed data, does it required to store?
+                # print(value_file)
+                # print('---------------------------------')
                 self.produce_analysis(value_file)
-            # if self.argparse.update:
-            #     self.produce_file_update(value_file)
+            if self.argparse.update:
+                self.produce_file_update(value_file)
             if self.argparse.delete:
                 self.produce_file_delete(value_file)
             # if self.argparse.necessary:
