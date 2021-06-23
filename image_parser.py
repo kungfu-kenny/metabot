@@ -34,7 +34,6 @@ class ImageParser:
         self.folder_output = os.path.join(self.folder_current, folder_out)
         self.create_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.folder_development()
-        # print(self.argparse)
         
     def folder_development(self) -> None:
         """
@@ -212,6 +211,18 @@ class ImageParser:
         image = Image.open(os.path.join(self.folder_input, value_file))
         image.save(os.path.join(self.folder_output, value_file))
 
+    def produce_print(self, value_file:str, value_folder:str) -> None:
+        """
+        Method which is dedicated to use the print of the selected values
+        Input:  value_file = string to the file
+                value_folder = folder where to look at some files
+        Output: we've printed values for it
+        """
+        print(value_file)
+        print('---------------------------------')
+        pprint(self.produce_analysis(value_file, value_folder))
+        print()
+
     def main_usage(self) -> None:
         """
         Main method which is dedicated to work with
@@ -226,31 +237,22 @@ class ImageParser:
         else:
             value_files = [f for f in os.listdir(self.folder_input) if self.is_img(os.path.join(self.folder_input, f))]
         for value_file in value_files:
+            #TODO think what to do with the analysed data, does it required to store?
             if self.argparse.analyse:
-                #TODO think what to do with the analysed data, does it required to store?
-                print(value_file)
-                print('---------------------------------')
-                pprint(self.produce_analysis(value_file, self.folder_input))
-                print()
+                self.produce_print(value_file, self.folder_input)
 
             if self.argparse.change:
                 self.produce_file_update(value_file)
 
             if self.argparse.recheck:
-                print(value_file)
-                print('---------------------------------')
-                pprint(self.produce_analysis(value_file, self.folder_output))
-                print()
+                self.produce_print(value_file, self.folder_output)
 
             if self.argparse.delete:
                 self.produce_file_delete(value_file)
 
             if self.argparse.observe:
-                print(value_file)
-                print('---------------------------------')
-                pprint(self.produce_analysis(value_file, self.folder_output))
-                print()
-                
+                self.produce_print(value_file, self.folder_output)
+
             if self.argparse.necessary:
                 os.remove(os.path.join(self.folder_input, value_file))
                 print(f"We successfully removed {value_file} from our folder: {self.folder_input}")
