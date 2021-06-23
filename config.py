@@ -28,34 +28,38 @@ ifd_first = {
              piexif.ImageIFD.Software: u"Hhhhmmmm"
              }
 
+
 ifd_zeroth_exp = {
-            1:piexif.ImageIFD.Make,
-            2:piexif.ImageIFD.XResolution,
-            3:piexif.ImageIFD.YResolution, 
-            4:piexif.ImageIFD.Software
+            271:['piexif.ImageIFD.Make', 'Make', 'str'],
+            282:['piexif.ImageIFD.XResolution', 'X Resolution', 'tuple of int'],
+            283:['piexif.ImageIFD.YResolution', 'Y Resolution', 'tuple of int'],
+            305:['piexif.ImageIFD.Software', 'Software', 'str'],
             }
 
 ifd_exif_exp = {
-            1:piexif.ExifIFD.DateTimeOriginal,
-            2:piexif.ExifIFD.LensMake,
-            3:piexif.ExifIFD.Sharpness,
-            4:piexif.ExifIFD.LensSpecification,
+            36867:['piexif.ExifIFD.DateTimeOriginal', 'Date Time Original', 'str'],
+            42035:['piexif.ExifIFD.LensMake', 'Lens Make', 'str'],
+            41994:['piexif.ExifIFD.Sharpness', 'Sharpness', 'int'], 
+            42034:['piexif.ExifIFD.LensSpecification', 'Lens Specification', 'tuple of tuples with int (4x2)']
             }
+
 ifd_gps_exp = {
-           1:piexif.GPSIFD.GPSVersionID,
-           2:piexif.GPSIFD.GPSAltitudeRef,
-           3:piexif.GPSIFD.GPSDateStamp,
+           0:['piexif.GPSIFD.GPSVersionID', 'GPS Version ID', 'tuple of int'],
+           5:['piexif.GPSIFD.GPSAltitudeRef', 'GPS Altitude Ref', 'int'],
+           29:['piexif.GPSIFD.GPSDateStamp', 'GPS DateStamp', 'str'],
            }
+
 ifd_first_exp = {
-             1:piexif.ImageIFD.Make,
-             2:piexif.ImageIFD.XResolution,
-             3:piexif.ImageIFD.YResolution,
-             4:piexif.ImageIFD.Software
+             271: ['piexif.ImageIFD.Make', 'Make', 'str'],
+             282: ['piexif.ImageIFD.XResolution', 'X Resolution', 'tuple of int'],
+             283: ['piexif.ImageIFD.YResolution', 'Y Resolution', 'tuple of int'],
+             305: ['piexif.ImageIFD.Software', 'Software', 'str']
              }
 
 json_name = 'settings.json'
+json_name_translate = 'check_changes.json'
 json_keys_default = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st": ifd_first, "thumbnail": None}
-json_keys_translate = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st": ifd_first, "thumbnail": None}
+json_keys_translate = {"0th": ifd_zeroth_exp, "Exif": ifd_exif_exp, "GPS": ifd_gps_exp, "1st": ifd_first_exp, "thumbnail": None}
 
 folder_config = 'config'
 folder_img = 'img_input'

@@ -11,7 +11,9 @@ from config import (description,
                     folder_out,
                     folder_config,
                     json_name,
+                    json_name_translate,
                     json_keys_default,
+                    json_keys_translate,
                     args_deletion_necessary,
                     args_analyse_pictures,
                     args_change_meta,
@@ -51,11 +53,11 @@ class ImageParser:
         Input:  Basic values
         Output: json file was created
         """
-        value_name = os.path.join(self.folder_config, json_name)
-        if os.path.exists(value_name):
-            return 
-        with open(value_name, 'w') as outfile:
-            outfile.write(json.dumps(json_keys_default))
+        for v, key in zip([json_name, json_name_translate], [json_keys_default, json_keys_translate]):
+            value_name = os.path.join(self.folder_config, v)
+            if not os.path.exists(value_name):
+                with open(value_name, 'w') as outfile:
+                    outfile.write(json.dumps(key, indent=4))
             
     @classmethod
     def parse_arguments(cls) -> object:
