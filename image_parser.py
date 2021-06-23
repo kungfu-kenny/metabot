@@ -254,10 +254,13 @@ class ImageParser:
 
             if self.argparse.observe:
                 self.produce_print(value_file, self.folder_output)
-
-            if self.argparse.necessary:
+            
+            value_bool = self.argparse.delete or self.argparse.change or self.argparse.analyse
+            if self.argparse.necessary and value_bool:
                 os.remove(os.path.join(self.folder_input, value_file))
                 print(f"We successfully removed {value_file} from our folder: {self.folder_input}")
+            elif self.argparse.necessary and not value_bool:
+                print(f'There are no sence to delete file: {value_file} in case of the absence work with it or making copy')
 
 
 if __name__ == '__main__':
