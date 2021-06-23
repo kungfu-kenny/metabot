@@ -28,25 +28,25 @@ ifd_first = {
              piexif.ImageIFD.Software: u"Hhhhmmmm"
              }
 
-ifd_zeroth = {
-            piexif.ImageIFD.Make: u"Our daddy told us not to be ashamed of our dicks",
-            piexif.ImageIFD.XResolution: (300, 1),
-            piexif.ImageIFD.YResolution: (300, 1), 
-            piexif.ImageIFD.Software: u"Sorry for what?"
+ifd_zeroth_exp = {
+            1:piexif.ImageIFD.Make,
+            2:piexif.ImageIFD.XResolution,
+            3:piexif.ImageIFD.YResolution, 
+            4:piexif.ImageIFD.Software
             }
 
-ifd_exif = {
-            piexif.ExifIFD.DateTimeOriginal: u"2077:99:99 44:44:00",
-            piexif.ExifIFD.LensMake: u"I'm sorry",
-            piexif.ExifIFD.Sharpness: 300,
-            piexif.ExifIFD.LensSpecification: ((1, 1), (1, 1), (1, 1), (1, 1)),
+ifd_exif_exp = {
+            1:piexif.ExifIFD.DateTimeOriginal,
+            2:piexif.ExifIFD.LensMake,
+            3:piexif.ExifIFD.Sharpness,
+            4:piexif.ExifIFD.LensSpecification,
             }
-ifd_gps = {
-           piexif.GPSIFD.GPSVersionID: (2, 0, 0, 0),
-           piexif.GPSIFD.GPSAltitudeRef: 1,
-           piexif.GPSIFD.GPSDateStamp: u"2000:99:99 44:44:00",
+ifd_gps_exp = {
+           1:piexif.GPSIFD.GPSVersionID,
+           2:piexif.GPSIFD.GPSAltitudeRef,
+           3:piexif.GPSIFD.GPSDateStamp,
            }
-ifd_first = {
+ifd_first_exp = {
              1:piexif.ImageIFD.Make,
              2:piexif.ImageIFD.XResolution,
              3:piexif.ImageIFD.YResolution,
