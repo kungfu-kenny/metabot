@@ -146,7 +146,7 @@ class ImageParser:
         Input:  value_file = name of the selected file
         Output: dictionary values with the 
         """
-        file_path = os.path.join(self.folder_input, value_file)
+        file_path = os.path.join(self.folder_output, value_file)
         value_exif = self.get_list_metadate_exifread(file_path)
         value_pil = self.get_list_metadate_pil(file_path)
         for key_exif in list(value_exif.keys()):
@@ -159,9 +159,7 @@ class ImageParser:
             if 'Thumbnail ' in key_exif:
                 value_exif.pop(key_exif)
         value_pil.update(value_exif)
-        pprint(value_pil)
-        print()
-        # return value_pil
+        return value_pil
 
     @staticmethod
     def parse_json_update(value_location:str) -> dict:
@@ -170,19 +168,25 @@ class ImageParser:
         Input:  value_location = location to the json file to create the new one
         Output: dictionary to insert as new exif
         """
+        def parse_lists(value_element:list) -> tuple:
+            """
+            Function which is dedicated to work with the elements and to make them as lists
+            Input:  value_element = element which is to transform
+            Output: we created values for the creation 
+            """
+            if isinstance(value_element, list):
+                value_element = tuple([parse_lists(f) for f in value_element])
+            return value_element 
+
         value_dict = json.load(open(value_location))
         value_return = {}
         for keys, values in value_dict.items():
             if values:
-                new_value = {int(key):value for key, value in values.items()}
+                values_new = {int(key):parse_lists(value) for key, value in values.items()}
             else:
-                new_value = values
-            value_return[keys] = new_value
-
-        pprint(value_dict)
-        print('+++++++++++++++++++++++++++++++++++++++++++++')
-        pprint(value_return)
-        return value_dict
+                values_new = values
+            value_return[keys] = values_new
+        return value_return
 
     def produce_file_update(self, value_file:str) -> None:
         """
@@ -190,13 +194,7 @@ class ImageParser:
         Input:  value_file = file name of the input
         Output: saved image without any exif values to the output
         """
-        exif_dict = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st": ifd_first, "thumbnail": None}
-        # pprint(exif_dict)
-        # print('==============================================================')
-        exif_dict_ = self.parse_json_update(os.path.join(self.folder_config, json_name))
-        # pprint(value_json)
-        # print('################################################################')
-        # pprint(value_json)
+        exif_dict = self.parse_json_update(os.path.join(self.folder_config, json_name))
         exif_bytes = piexif.dump(exif_dict)
         
         im = Image.open(os.path.join(self.folder_input, value_file))
@@ -225,18 +223,18 @@ class ImageParser:
         else:
             value_files = [f for f in os.listdir(self.folder_input) if self.is_img(os.path.join(self.folder_input, f))]
         for value_file in value_files:
-            print(value_file)
             if self.argparse.analyse:
                 #TODO think what to do with the analysed data, does it required to store?
-                # print(value_file)
-                # print('---------------------------------')
-                self.produce_analysis(value_file)
+                print(value_file)
+                print('---------------------------------')
+                pprint(self.produce_analysis(value_file))
+                print()
             if self.argparse.update:
                 self.produce_file_update(value_file)
             if self.argparse.delete:
                 self.produce_file_delete(value_file)
-            # if self.argparse.necessary:
-            #     os.remove(value_file)
+            if self.argparse.necessary:
+                os.remove(value_file)
 
 
 if __name__ == '__main__':
