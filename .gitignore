@@ -2,5 +2,6 @@ __pycache__
 .env
 venv
 config
+img_tmp
 img_input
 img_output

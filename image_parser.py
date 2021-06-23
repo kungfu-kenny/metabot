@@ -59,10 +59,10 @@ class ImageParser:
                 with open(value_name, 'w') as outfile:
                     outfile.write(json.dumps(key, indent=4))
             
-    @classmethod
-    def parse_arguments(cls) -> object:
+    @staticmethod
+    def parse_arguments() -> object:
         """
-        Classmethod which are dedicated to parse arguments which were inserted
+        Staticmethod which are dedicated to parse arguments which were inserted
         Input:  everything which was inserted by user
         Output: we successfully parsed arguments
         """

@@ -1,7 +1,10 @@
 import os
 import piexif
+from dotenv import load_dotenv
 
-bot_key = 'a'
+load_dotenv()
+
+bot_key = os.getenv('BOT_KEY')
 
 ifd_zeroth = {
             piexif.ImageIFD.Make: u"Our daddy told us not to be ashamed of our dicks",
@@ -64,6 +67,7 @@ json_keys_translate = {"0th": ifd_zeroth_exp, "Exif": ifd_exif_exp, "GPS": ifd_g
 folder_config = 'config'
 folder_img = 'img_input'
 folder_out = 'img_output'
+folder_tmp = 'img_tmp'
 
 args_deletion_necessary = ('-n', '--necessary', 'argument which is dedicated to delete original images after the work with them', 'store_true', False)
 args_update_json = ('-u', '--update', 'argument which is dedicated to update the json value from the config', 'store_true', False)
