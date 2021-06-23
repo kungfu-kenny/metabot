@@ -12,14 +12,12 @@ from config import (description,
                     folder_config,
                     json_name,
                     json_keys_default,
-                    ifd_first,
-                    ifd_gps,
-                    ifd_exif,
-                    ifd_zeroth,
                     args_deletion_necessary,
                     args_analyse_pictures,
                     args_change_meta,
                     args_delete_meta,
+                    args_recheck_upd,
+                    args_recheck_rem,
                     args_update_json,
                     args_use_selected)
 
@@ -36,7 +34,7 @@ class ImageParser:
         self.folder_output = os.path.join(self.folder_current, folder_out)
         self.create_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.folder_development()
-        print(self.argparse)
+        # print(self.argparse)
         
     def folder_development(self) -> None:
         """
@@ -71,6 +69,8 @@ class ImageParser:
         ap, ap_name, ap_help, ap_act, ap_req = args_analyse_pictures
         cm, cm_name, cm_help, cm_act, cm_req = args_change_meta
         dm, dm_name, dm_help, dm_act, dm_req = args_delete_meta
+        ru, ru_name, ru_help, ru_act, ru_req = args_recheck_upd
+        rr, rr_name, rr_help, rr_act, rr_req = args_recheck_rem
         uj, uj_name, uj_help, uj_act, uj_req = args_update_json
         us, us_name, us_help, us_type, us_req, us_def = args_use_selected
         
@@ -79,6 +79,8 @@ class ImageParser:
         parser.add_argument(ap, ap_name, action=ap_act, help=ap_help, required=ap_req)
         parser.add_argument(cm, cm_name, action=cm_act, help=cm_help, required=cm_req)
         parser.add_argument(dm, dm_name, action=dm_act, help=dm_help, required=dm_req)
+        parser.add_argument(ru, ru_name, action=ru_act, help=ru_help, required=ru_req) 
+        parser.add_argument(rr, rr_name, action=rr_act, help=rr_help, required=rr_req) 
         parser.add_argument(uj, uj_name, action=uj_act, help=uj_help, required=uj_req) 
         parser.add_argument(us, us_name, type=us_type, help=us_help, required=us_req, default=us_def)
         
@@ -140,13 +142,14 @@ class ImageParser:
         value_image = open(value_file_path, 'rb')
         return {key:str(value) for key, value in exifread.process_file(value_image, details=False).items()}
 
-    def produce_analysis(self, value_file:str) -> None:
+    def produce_analysis(self, value_file:str, value_path:str) -> None:
         """
         Method which is dedicated 
         Input:  value_file = name of the selected file
+                value_path = path to the files for see the output
         Output: dictionary values with the 
         """
-        file_path = os.path.join(self.folder_output, value_file)
+        file_path = os.path.join(value_path, value_file)
         value_exif = self.get_list_metadate_exifread(file_path)
         value_pil = self.get_list_metadate_pil(file_path)
         for key_exif in list(value_exif.keys()):
@@ -172,7 +175,7 @@ class ImageParser:
             """
             Function which is dedicated to work with the elements and to make them as lists
             Input:  value_element = element which is to transform
-            Output: we created values for the creation 
+            Output: all lists were changed to the tuples
             """
             if isinstance(value_element, list):
                 value_element = tuple([parse_lists(f) for f in value_element])
@@ -227,14 +230,30 @@ class ImageParser:
                 #TODO think what to do with the analysed data, does it required to store?
                 print(value_file)
                 print('---------------------------------')
-                pprint(self.produce_analysis(value_file))
+                pprint(self.produce_analysis(value_file, self.folder_input))
                 print()
-            if self.argparse.update:
+
+            if self.argparse.change:
                 self.produce_file_update(value_file)
+
+            if self.argparse.recheck:
+                print(value_file)
+                print('---------------------------------')
+                pprint(self.produce_analysis(value_file, self.folder_output))
+                print()
+
             if self.argparse.delete:
                 self.produce_file_delete(value_file)
+
+            if self.argparse.observe:
+                print(value_file)
+                print('---------------------------------')
+                pprint(self.produce_analysis(value_file, self.folder_output))
+                print()
+                
             if self.argparse.necessary:
-                os.remove(value_file)
+                os.remove(os.path.join(self.folder_input, value_file))
+                print(f"We successfully removed {value_file} from our folder: {self.folder_input}")
 
 
 if __name__ == '__main__':
