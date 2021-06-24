@@ -60,6 +60,7 @@ def take_photo_uncompressed(message) -> None:
 def calculate_answer_on_the_buttons(query):
     data = query.data
     data_user = query.from_user.id
+    
     if data.startswith(callback_data_update):
         value_sent = data.split(callback_data_update)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
