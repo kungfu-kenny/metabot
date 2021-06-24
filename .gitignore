@@ -5,3 +5,4 @@ config
 img_tmp
 img_input
 img_output
+img_tmp_uncompressed

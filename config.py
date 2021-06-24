@@ -6,6 +6,20 @@ load_dotenv()
 
 bot_key = os.getenv('BOT_KEY')
 
+callback_separator = os.getenv('CALLBACK_SEPARATOR')
+
+callback_data_show = os.getenv('CALLBACK_DATA_SHOW')
+callback_data_update = os.getenv('CALLBACK_DATA_UPDATE')
+callback_data_delete = os.getenv('CALLBACK_DATA_DELETE')
+
+callback_data_show_un = os.getenv('CALLBACK_DATA_SHOW_UN')
+callback_data_update_un = os.getenv('CALLBACK_DATA_UPDATE_UN')
+callback_data_delete_un = os.getenv('CALLBACK_DATA_DELETE_UN')
+
+callback_data_show_f = os.getenv('CALLBACK_DATA_SHOW_F') #750f3081-7ff4-472c-b1c2-dca32c09550c
+callback_data_delete_f = os.getenv('CALLBACK_DATA_DELETE_F') #d688bfa1-5937-4f64-bfe5-8ff28ed8ee94
+callback_data_update_f = os.getenv('CALLBACK_DATA_UPDATE_F') #326839a7-4f85-4c51-ac36-cd9e6e32c601
+
 ifd_zeroth = {
             piexif.ImageIFD.Make: u"Our daddy told us not to be ashamed of our dicks",
             piexif.ImageIFD.XResolution: (300, 1),
@@ -64,10 +78,13 @@ json_name_translate = 'check_changes.json'
 json_keys_default = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st": ifd_first, "thumbnail": None}
 json_keys_translate = {"0th": ifd_zeroth_exp, "Exif": ifd_exif_exp, "GPS": ifd_gps_exp, "1st": ifd_first_exp, "thumbnail": None}
 
+list_image_ext = ('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')
+
 folder_config = 'config'
 folder_img = 'img_input'
 folder_out = 'img_output'
 folder_tmp = 'img_tmp'
+folder_tmp_uncompressed = 'img_tmp_uncompressed'
 
 args_deletion_necessary = ('-n', '--necessary', 'argument which is dedicated to delete original images after the work with them', 'store_true', False)
 args_update_json = ('-u', '--update', 'argument which is dedicated to update the json value from the config', 'store_true', False)
