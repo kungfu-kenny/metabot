@@ -1,5 +1,6 @@
 import os
 import io
+import tarfile
 from PIL import Image
 from uuid import uuid4
 from image_parser import ImageParser
@@ -32,7 +33,7 @@ class TelegramUsage:
         self.create_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.create_name_tmp = lambda: f"{uuid4()}.jpg"
         self.create_name_unc = lambda x: f"{uuid4()}{x}"
-        #TODO TEST idea of the development of the variable which stores this values or not?
+        # TODO TEST idea of the development of the variable which stores this values or not?
         # TODO TEST idea of the development of the filename via the transition of the  
 
     def store_info_file(self, value_id:int, value_name:str, value_id_message:int) -> None:
@@ -44,6 +45,32 @@ class TelegramUsage:
         Output: we saved all neccessary values to the
         """
         self.create_folder(self.folder_config)
+        file_location = os.path.join(self.folder_config, txt_sent)
+        with open(file_location, "a+") as file_values:
+            file_values.write(f"{value_id},{value_name},{value_id_message}\n")
+
+    def make_file_output_sum(self) -> set:
+        """
+        Method which is dedicated to take all selected
+        Input:  file_path = path to the images
+                file_name_list = list of the used names
+                file_name_output_list = list of the output names
+        Output: we created compressed archieve for sending back
+        """
+        # TODO add this later 
+        pass
+
+    def make_file_output(self, file_path:str, file_name:str, file_name_output:str) -> set:
+        """
+        Method which is dedicated to create the rar file and sending to the client
+        Input:  file_path = path to the image file which is required to sent
+                file_name = name which was renamed
+                file_name_output = name of output names
+        Output: we created compressed archive with the pictures 
+        """
+        tar_name = f'{os.path.splitext(file_name_output)[0]}.rar'
+        with tarfile.TarFile(tar_name, 'w') as tar:
+            tar.write(os.path.join(file_path, file_name))
 
     def delete_stored_info(self, value_id:int, value_name:str, value_id_message:int) -> None:
         """
