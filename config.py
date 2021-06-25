@@ -16,9 +16,9 @@ callback_data_show_un = os.getenv('CALLBACK_DATA_SHOW_UN')
 callback_data_update_un = os.getenv('CALLBACK_DATA_UPDATE_UN')
 callback_data_delete_un = os.getenv('CALLBACK_DATA_DELETE_UN')
 
-callback_data_show_f = os.getenv('CALLBACK_DATA_SHOW_F') #750f3081-7ff4-472c-b1c2-dca32c09550c
-callback_data_delete_f = os.getenv('CALLBACK_DATA_DELETE_F') #d688bfa1-5937-4f64-bfe5-8ff28ed8ee94
-callback_data_update_f = os.getenv('CALLBACK_DATA_UPDATE_F') #326839a7-4f85-4c51-ac36-cd9e6e32c601
+callback_data_show_f = os.getenv('CALLBACK_DATA_SHOW_F')
+callback_data_delete_f = os.getenv('CALLBACK_DATA_DELETE_F')
+callback_data_update_f = os.getenv('CALLBACK_DATA_UPDATE_F')
 
 ifd_zeroth = {
             piexif.ImageIFD.Make: u"Our daddy told us not to be ashamed of our dicks",
@@ -80,6 +80,7 @@ json_keys_translate = {"0th": ifd_zeroth_exp, "Exif": ifd_exif_exp, "GPS": ifd_g
 
 list_image_ext = ('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')
 
+txt_sent = 'text_transition.txt'
 folder_config = 'config'
 folder_img = 'img_input'
 folder_out = 'img_output'

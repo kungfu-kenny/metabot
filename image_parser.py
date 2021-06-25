@@ -192,17 +192,20 @@ class ImageParser:
             value_return[keys] = values_new
         return value_return
 
-    def produce_file_update(self, value_file:str) -> None:
+    def produce_file_update(self, value_file:str, folder_input:str, folder_output:str, value_name_new:str='') -> None:
         """
         Method which is dedicated to update required metadata
         Input:  value_file = file name of the input
+                folder_input = folder where to take the image
+                folder_output = folder where to store image
+                value_name_new = unneccessary argument for new name
         Output: saved image without any exif values to the output
         """
         exif_dict = self.parse_json_update(os.path.join(self.folder_config, json_name))
         exif_bytes = piexif.dump(exif_dict)
-        
-        im = Image.open(os.path.join(self.folder_input, value_file))
-        im.save(os.path.join(self.folder_output, value_file), exif=exif_bytes)
+        value_name = value_name_new if value_name_new else value_file
+        im = Image.open(os.path.join(folder_input, value_file))
+        im.save(os.path.join(folder_output, value_name), exif=exif_bytes)
 
     def produce_file_delete(self, value_file:str) -> None:
         """
@@ -244,7 +247,7 @@ class ImageParser:
                 self.produce_print(value_file, self.folder_input)
 
             if self.argparse.change:
-                self.produce_file_update(value_file)
+                self.produce_file_update(value_file, self.folder_input, self.folder_output)
 
             if self.argparse.recheck:
                 self.produce_print(value_file, self.folder_output)

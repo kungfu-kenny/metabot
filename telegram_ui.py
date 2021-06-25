@@ -1,4 +1,5 @@
 import os
+from pprint import pprint
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from image_parser import ImageParser
@@ -11,6 +12,7 @@ from config import (bot_key,
                     callback_data_show_f,
                     callback_data_update_f,
                     callback_data_delete_f,
+                    callback_data_show_un,
                     callback_data_update_un,
                     callback_data_delete_un)
 
@@ -21,6 +23,8 @@ telegram_us = TelegramUsage()
 @bot.message_handler(content_types= ["photo"])
 def take_photo(message) -> None:
     value_photos = []
+    #TODO add here parameters and not send them via the callback !
+    # telegram_us.your_name =
     for photos in message.photo:
         raw = photos.file_id
         file_info = bot.get_file(raw)
@@ -64,21 +68,29 @@ def calculate_answer_on_the_buttons(query):
     if data.startswith(callback_data_update):
         value_sent = data.split(callback_data_update)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
-        bot.send_message(data_user, text='Checking_1', reply_to_message_id=message_id)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_update)
-
-    
+        message_photo_out = telegram_us.produce_file_update(message_photo_path, message_photo_name)
+        message_photo_text = telegram_us.produce_message_photo_text(callback_data_update)
+        # file_obj = io.BytesIO(your_bin_data)
+        # file_obj.name = "MarksSYAP.xlsx"
+        # bot.send_document(message.chat.id,file_obj)
+        image_new = open(os.path.join(message_photo_path, message_photo_out), 'rb')
+        bot.send_photo(data_user, image_new, caption=message_photo_text, reply_to_message_id=message_id)
+        image_new.close()
+        # ImageParser().produce_print(message_photo_out, message_photo_path)
+        os.remove(os.path.join(message_photo_path, message_photo_out))
+        
     if data.startswith(callback_data_show):
         value_sent = data.split(callback_data_show)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         bot.send_message(data_user, text='Checking_2', reply_to_message_id=message_id)
-        message_photo_usage = message_photo
-
+        message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_show)
+        
     if data.startswith(callback_data_delete):
         value_sent = data.split(callback_data_delete)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         bot.send_message(data_user, text='Checking_3', reply_to_message_id=message_id)
-        message_photo_usage = message_photo
+        message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_delete)
 
 
 if __name__ == '__main__':
