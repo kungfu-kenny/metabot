@@ -1,6 +1,6 @@
 import os
 import io
-import tarfile
+import zipfile
 from PIL import Image
 from uuid import uuid4
 from image_parser import ImageParser
@@ -33,8 +33,6 @@ class TelegramUsage:
         self.create_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.create_name_tmp = lambda: f"{uuid4()}.jpg"
         self.create_name_unc = lambda x: f"{uuid4()}{x}"
-        # TODO TEST idea of the development of the variable which stores this values or not?
-        # TODO TEST idea of the development of the filename via the transition of the  
 
     def store_info_file(self, value_id:int, value_name:str, value_id_message:int) -> None:
         """
@@ -49,28 +47,19 @@ class TelegramUsage:
         with open(file_location, "a+") as file_values:
             file_values.write(f"{value_id},{value_name},{value_id_message}\n")
 
-    def make_file_output_sum(self) -> set:
-        """
-        Method which is dedicated to take all selected
-        Input:  file_path = path to the images
-                file_name_list = list of the used names
-                file_name_output_list = list of the output names
-        Output: we created compressed archieve for sending back
-        """
-        # TODO add this later 
-        pass
-
     def make_file_output(self, file_path:str, file_name:str, file_name_output:str) -> set:
         """
-        Method which is dedicated to create the rar file and sending to the client
+        Method which is dedicated to create the zip file and sending to the client
         Input:  file_path = path to the image file which is required to sent
                 file_name = name which was renamed
                 file_name_output = name of output names
         Output: we created compressed archive with the pictures 
         """
-        tar_name = f'{os.path.splitext(file_name_output)[0]}.rar'
-        with tarfile.TarFile(tar_name, 'w') as tar:
-            tar.write(os.path.join(file_path, file_name))
+        zip_name = f'{os.path.splitext(file_name_output)[0]}.zip'
+        with zipfile.ZipFile(os.path.join(self.folder_config, zip_name), 'w') as zp:
+            path_write = os.path.join(file_path, file_name)
+            zp.write(path_write, os.path.basename(path_write))
+        return zip_name, self.folder_config
 
     def delete_stored_info(self, value_id:int, value_name:str, value_id_message:int) -> None:
         """
@@ -141,7 +130,6 @@ class TelegramUsage:
             for value_name in os.listdir(self.folder_tmp):
                 if os.path.splitext(value_name)[0] == value_name_ext:
                     return value_name, self.folder_tmp
-        
         if value_type in [callback_data_show_un, callback_data_update_un, callback_data_delete_un]:
             for value_name in os.listdir(self.folder_tmp_unc):
                 if os.path.splitext(value_name)[0] == value_name_ext:
@@ -155,18 +143,55 @@ class TelegramUsage:
         """
         if value_type == callback_data_update:
             return "We've updated values of the picture which was sent and compressed"
+        if value_type == callback_data_delete:
+            return "We checked the image and removed the metatags in additional cases"
+        if value_type == callback_data_show:
+            return "Let's see the values of the metatags of the analysed image"
+        if value_type == callback_data_update_un:
+            return "We've updated values to a unencrypted values of the images and sent you back"
+        if value_type == callback_data_delete_un:
+            return "We checked the uncompressed image and removed the metatags in additional cases"
+        if value_type == callback_data_show_un:
+            return "Let's see the values of the metatags of the analysed uncompressed image"
         return "Check values"
-
+        
     def produce_file_update(self, image_folder_path:str, image_name:str) -> str:
         """
-        Method which is dedicated to update file with
+        Method which is dedicated to update file with selected metatags
         Input:  image_folder_path = folder where this file is located
-                image_name = name of the 
+                image_name = name of the file
         Output: name of the selected 
         """
         value_ext = os.path.splitext(image_name)[-1]
         new_name = self.create_name_unc(value_ext)
         self.image_parser.produce_file_update(image_name, image_folder_path, image_folder_path, new_name)
+        print(f"Deleting {image_name}")
+        os.remove(os.path.join(image_folder_path, image_name))
+        return new_name
+
+    def produce_file_showings(self, image_folder_path:str, image_name:str) -> str:
+        """
+        Method which is dedicated to check the file and to return the string to the printing
+        Input:  image_folder_path = path to the selected images
+                image_name = nema of the image to open
+        Output: string which is dedicated to print
+        """
+        value_json = self.image_parser.produce_analysis(image_name, image_folder_path)
+        value_showings = '\n'.join([f"{key} ----------> {value}" for key, value in value_json.items()])
+        if value_showings:
+            return value_showings
+        return 'Unfortunatelly, file cannot provide any metatags'
+
+    def produce_file_delete(self, image_folder_path:str, image_name:str) -> str:
+        """
+        Method which is dedicated to delete metatags
+        Input:  image_folder_path = folder where image was stored
+                image_name = name of the file
+        Output: name of the new file
+        """
+        value_ext = os.path.splitext(image_name)[-1]
+        new_name = self.create_name_unc(value_ext)
+        self.image_parser.produce_file_delete(image_name, image_folder_path, image_folder_path, new_name)
         print(f"Deleting {image_name}")
         os.remove(os.path.join(image_folder_path, image_name))
         return new_name
@@ -187,4 +212,7 @@ class TelegramUsage:
         new_image.save(os.path.join(folder_used, value_name))
         return value_name
 
-    
+
+if __name__ == '__main__':
+    a = TelegramUsage()
+    a.make_file_output('E:\Projects\\folder_metadata\img_input', 'photo_2021-06-25_13-27-25.jpg', 'tst')

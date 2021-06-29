@@ -207,14 +207,18 @@ class ImageParser:
         im = Image.open(os.path.join(folder_input, value_file))
         im.save(os.path.join(folder_output, value_name), exif=exif_bytes)
 
-    def produce_file_delete(self, value_file:str) -> None:
+    def produce_file_delete(self, value_file:str, folder_input:str, folder_output:str, value_file_new:str='') -> None:
         """
         Method which is dedicated to delete all metadata
         Input:  value_file = file name of the input file
+                folder_input = input folder of the image
+                folder_output = output folder where to store this
+                value_file_new = unneccessary new image name if requires 
         Output: saved image without any exif values to the output
         """
-        image = Image.open(os.path.join(self.folder_input, value_file))
-        image.save(os.path.join(self.folder_output, value_file))
+        image_save = value_file if not value_file_new else value_file_new
+        image = Image.open(os.path.join(folder_input, value_file))
+        image.save(os.path.join(folder_output, image_save))
 
     def produce_print(self, value_file:str, value_folder:str) -> None:
         """
@@ -253,7 +257,7 @@ class ImageParser:
                 self.produce_print(value_file, self.folder_output)
 
             if self.argparse.delete:
-                self.produce_file_delete(value_file)
+                self.produce_file_delete(value_file, self.folder_input, self.folder_output)
 
             if self.argparse.observe:
                 self.produce_print(value_file, self.folder_output)
