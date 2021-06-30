@@ -1,11 +1,14 @@
 import os
 import io
+import py7zr
+import tarfile
 import zipfile
 from PIL import Image
 from uuid import uuid4
 from image_parser import ImageParser
 from config import (txt_sent,
                     list_image_ext,
+                    list_archive_ext,
                     callback_data_show,
                     callback_data_update,
                     callback_data_delete,
@@ -17,6 +20,9 @@ from config import (txt_sent,
                     callback_data_delete_un,
                     folder_tmp,
                     folder_config,
+                    folder_arc_input,
+                    folder_arc_extract,
+                    folder_arc_output,
                     folder_tmp_uncompressed)
 
 
@@ -29,6 +35,9 @@ class TelegramUsage:
         self.folder_current = os.getcwd()
         self.folder_tmp = os.path.join(self.folder_current, folder_tmp)
         self.folder_config = os.path.join(self.folder_current, folder_config)
+        self.folder_arc_input = os.path.join(self.folder_current, folder_arc_input)
+        self.folder_arc_output = os.path.join(self.folder_current, folder_arc_output)
+        self.folder_arc_extract = os.path.join(self.folder_current, folder_arc_extract)
         self.folder_tmp_unc = os.path.join(self.folder_current, folder_tmp_uncompressed)
         self.create_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.create_name_tmp = lambda: f"{uuid4()}.jpg"
@@ -105,7 +114,8 @@ class TelegramUsage:
         """
         return value_name.lower().endswith(list_image_ext)
 
-    def detect_image_value(self, bytes_io:object) -> bool:
+    @staticmethod
+    def detect_image_value(bytes_io:object) -> bool:
         """
         Method which is dedicated to detect the mage from the inserted bytes of the text
         Input:  bytes_io = bytes from the telegram which were sent via message
@@ -118,6 +128,55 @@ class TelegramUsage:
             return True
         except Exception as e:
             return False
+
+    @staticmethod
+    def detect_archive_ext(value_name:str) -> bool:
+        """
+        Static method which is dedicated to check that inserted value can be an archieve
+        Input:  value_name = name of the file which uer have been
+        Output: boolean value which signifies archieve
+        """
+        return value_name.lower().endswith(list_archive_ext)
+
+    def detect_archive_value(self, bytes_io:bytes, bytes_name:str) -> bool:
+        """
+        Method which is dedicated to check that 
+        Input:  bytes_io = bytes of the file which is sent to the values
+        Output: True if it is value
+        """
+        self.create_folder(self.folder_arc_input)
+        file_loc = os.path.join(self.folder_arc_input, bytes_name)
+        with open(file_loc, 'wb') as tst_bytes_io:
+            tst_bytes_io.write(bytes_io)
+        value_check = zipfile.is_zipfile(file_loc) or tarfile.is_tarfile(file_loc)
+        os.remove(file_loc)
+        return value_check
+
+    def detect_compability_archive(self, bytes_io:bytes, value_file_name:str) -> set:
+        """
+        Method which is dedicated to compare archives
+        Input:  value_file = name of the file which is dedicated
+        Output: boolean value which signifies that wee ned to use everything and path to the file
+        """
+        self.create_folder(self.folder_arc_input)
+        self.create_folder(self.folder_arc_extract)
+        file_name_new = f"{self.create_name_unc('_')}{value_file_name}"
+        file_loc = os.path.join(self.folder_arc_extract, file_name_new)
+        file_extract = os.path.join(self.folder_arc_extract, file_name_new)
+        with open(file_loc, 'wb') as tst_bytes_io:
+            tst_bytes_io.write(bytes_io)
+        if zipfile.is_zipfile(file_loc):
+            with zipfile.ZipFile(file_loc) as archive:
+                for value_name in archive.namelist():
+                    _, value_ext = os.path.splitext(value_name)
+                    if value_ext in list_image_ext:
+                        print(value_name)
+                        print('=======================================')
+                        # file_input = self.get_path(file_extract, value_name)
+                        # file_output_tmp = self.get_path(file_extract, f"{value_page}{value_ext}")
+                        # archive.extract(value_name, file_output)
+                        # self.move_file(file_input, file_output_tmp)
+
 
     def detect_usage_location(self, value_name_ext:str, value_type:str) -> set:
         """

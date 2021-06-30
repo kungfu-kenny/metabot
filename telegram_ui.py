@@ -48,7 +48,7 @@ def take_photo(message) -> None:
 @bot.message_handler(content_types=['document'])
 def take_photo_uncompressed(message) -> None:
     file_name = message.document.file_name
-    if telegram_us.detect_image_ext(file_name):
+    if telegram_us.detect_image_ext(file_name) or telegram_us.detect_archive_ext(file_name):
         file_id_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_id_info.file_path)
         if telegram_us.detect_image_value(downloaded_file):
@@ -63,6 +63,16 @@ def take_photo_uncompressed(message) -> None:
                 telebot.types.InlineKeyboardButton('Remove Tags', callback_data=value_delete))
 
             bot.reply_to(message, 'Select command what to do with a photo:', reply_markup=keyboard)
+        elif not telegram_us.detect_image_value(downloaded_file) and telegram_us.detect_archive_value(downloaded_file, file_name):
+            value_photo = telegram_us.save_tmp_archieve(downloaded_file, False, os.path.splitext(file_name)[-1])
+            value_examine = f'{callback_data_show_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+            value_update = f'{callback_data_update_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+            value_delete = f'{callback_data_delete_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            keyboard.row(telebot.types.InlineKeyboardButton('Analyse Tags', callback_data=value_examine))
+            keyboard.row(telebot.types.InlineKeyboardButton('Update Tags', callback_data=value_update),
+                telebot.types.InlineKeyboardButton('Remove Tags', callback_data=value_delete))
         else: 
             bot.reply_to(message, f"Unfortunatelly we faced several problems with sent file {file_name}. It seems to be broken")
             return

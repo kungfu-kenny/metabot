@@ -79,6 +79,7 @@ json_keys_default = {"0th": ifd_zeroth, "Exif": ifd_exif, "GPS": ifd_gps, "1st":
 json_keys_translate = {"0th": ifd_zeroth_exp, "Exif": ifd_exif_exp, "GPS": ifd_gps_exp, "1st": ifd_first_exp, "thumbnail": None}
 
 list_image_ext = ('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')
+list_archive_ext = ('.rar', '.zip', '.7z')
 
 txt_sent = 'text_transition.txt'
 folder_config = 'config'
@@ -86,6 +87,9 @@ folder_img = 'img_input'
 folder_out = 'img_output'
 folder_tmp = 'img_tmp'
 folder_tmp_uncompressed = 'img_tmp_uncompressed'
+folder_arc_input = 'img_archive_input'
+folder_arc_extract = 'img_archive_extract'
+folder_arc_output = 'img_archive_output'
 
 args_deletion_necessary = ('-n', '--necessary', 'argument which is dedicated to delete original images after the work with them', 'store_true', False)
 args_update_json = ('-u', '--update', 'argument which is dedicated to update the json value from the config', 'store_true', False)
