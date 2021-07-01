@@ -23,8 +23,6 @@ telegram_us = TelegramUsage()
 @bot.message_handler(content_types= ["photo"])
 def take_photo(message) -> None:
     value_photos = []
-    #TODO add here parameters and not send them via the callback !
-    # telegram_us.your_name =
     for photos in message.photo:
         raw = photos.file_id
         file_info = bot.get_file(raw)
@@ -42,8 +40,6 @@ def take_photo(message) -> None:
                 telebot.types.InlineKeyboardButton('Remove Tags', callback_data=value_delete))
 
     bot.reply_to(message, 'Select command what to do with a photo:', reply_markup=keyboard)
-    #TODO add the extintions and send it as file?
-    #TODO make updating values to the values; 
 
 @bot.message_handler(content_types=['document'])
 def take_photo_uncompressed(message) -> None:
@@ -64,15 +60,16 @@ def take_photo_uncompressed(message) -> None:
 
             bot.reply_to(message, 'Select command what to do with a photo:', reply_markup=keyboard)
         elif not telegram_us.detect_image_value(downloaded_file) and telegram_us.detect_archive_value(downloaded_file, file_name):
-            value_photo = telegram_us.save_tmp_archieve(downloaded_file, False, os.path.splitext(file_name)[-1])
-            value_examine = f'{callback_data_show_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
-            value_update = f'{callback_data_update_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
-            value_delete = f'{callback_data_delete_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
-
+            value_photo = telegram_us.save_tmp_archive(downloaded_file, os.path.splitext(file_name)[-1])
+            value_examine = f'{callback_data_show_f}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+            value_update = f'{callback_data_update_f}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+            value_delete = f'{callback_data_delete_f}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
+            
             keyboard = telebot.types.InlineKeyboardMarkup()
             keyboard.row(telebot.types.InlineKeyboardButton('Analyse Tags', callback_data=value_examine))
             keyboard.row(telebot.types.InlineKeyboardButton('Update Tags', callback_data=value_update),
                 telebot.types.InlineKeyboardButton('Remove Tags', callback_data=value_delete))
+            bot.reply_to(message, 'Select command what to do with a file:', reply_markup=keyboard)
         else: 
             bot.reply_to(message, f"Unfortunatelly we faced several problems with sent file {file_name}. It seems to be broken")
             return
@@ -156,6 +153,40 @@ def calculate_answer_on_the_buttons(query):
         bot.send_message(data_user, text=message_photo_text, reply_to_message_id=message_id)
         bot.send_message(data_user, text=message_photo_analysis, reply_to_message_id=message_id)
         os.remove(os.path.join(message_photo_path, message_photo_name))
+
+    if data.startswith(callback_data_show_f):
+        value_sent = data.split(callback_data_show_f)[-1]
+        message_id, message_file = value_sent.split(callback_separator)
+        value_status, value_folder = telegram_us.detect_compability_archive(message_file)
+        if value_status:
+            list_images = telegram_us.remove_unnecessary(value_folder)
+            list_descriptions = []
+            for image_path_name in list_images:
+                image_folder_path, image_name = os.path.split(image_path_name)
+                image_description = telegram_us.produce_file_showings(image_folder_path, image_name)
+                image_description_new = '\n'.join([f"Name: {image_name}", image_description])
+                with open(image_path_name, 'rb') as img_sent:
+                    bot.send_photo(data_user, img_sent, caption=image_description_new, reply_to_message_id=message_id)
+            #TODO remove all
+        else:
+            bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
+
+    if data.startswith(callback_data_delete_f):
+        value_sent = data.split(callback_data_delete_f)[-1]
+        value_status, value_folder = telegram_us.detect_compability_archive(message_file)
+        if value_status:
+            list_images = telegram_us.remove_unnecessary(value_folder)
+        else:
+            bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
+
+    if data.startswith(callback_data_update_f):
+        value_sent = data.split(callback_data_update_f)[-1]
+        value_status, value_folder = telegram_us.detect_compability_archive(message_file)
+        if value_status:
+            list_images = telegram_us.remove_unnecessary(value_folder)
+        else:
+            bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
+
 
 
 if __name__ == '__main__':

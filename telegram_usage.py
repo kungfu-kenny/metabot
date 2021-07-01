@@ -130,6 +130,21 @@ class TelegramUsage:
             return False
 
     @staticmethod
+    def detect_image_archive(folder_file:str) -> bool:
+        """
+        Method which is dedicated to detect the mage from the inserted bytes of the text
+        Input:  folder_file = full path to the file
+        Output: True if it is image else False
+        """
+        try:
+            im = Image.open(folder_file)
+            im.verify()
+            im.close()
+            return True
+        except Exception as e:
+            return False
+
+    @staticmethod
     def detect_archive_ext(value_name:str) -> bool:
         """
         Static method which is dedicated to check that inserted value can be an archieve
@@ -148,35 +163,94 @@ class TelegramUsage:
         file_loc = os.path.join(self.folder_arc_input, bytes_name)
         with open(file_loc, 'wb') as tst_bytes_io:
             tst_bytes_io.write(bytes_io)
-        value_check = zipfile.is_zipfile(file_loc) or tarfile.is_tarfile(file_loc)
+        value_check = zipfile.is_zipfile(file_loc) or tarfile.is_tarfile(file_loc) or self.is_7zip(file_loc)
         os.remove(file_loc)
         return value_check
 
-    def detect_compability_archive(self, bytes_io:bytes, value_file_name:str) -> set:
+    @staticmethod
+    def is_7zip(file_loc:str) -> bool:
+        """
+        Static method which is dedicated to work with a 
+        Input:  file_loc = location to the file
+        Output: True if it is a 7zip file or False if it is not
+        """
+        try:
+            py7zr.SevenZipFile(file_loc, 'r')
+            return True
+        except Exception as e:
+            return False
+
+    def detect_compability_archive(self, value_file_name:str) -> set:
         """
         Method which is dedicated to compare archives
-        Input:  value_file = name of the file which is dedicated
+        Input:  value_file_name = name of the file which is dedicated
         Output: boolean value which signifies that wee ned to use everything and path to the file
         """
+        def extract_zip(file_extract:str, file_loc:str):
+            """
+            Function to extract zip archive
+            Input:  file_extract = path where to store the 
+                    file_loc = path to the file of the
+            Output: we extracted values
+            """
+            with zipfile.ZipFile(file_loc) as archive:
+                archive.extractall(file_extract)
+
+        def extract_rar(file_extract:str, file_loc:str):
+            """
+            Function to extract rar archive
+            Input:  file_extract = path where to store the 
+                    file_loc = path to the file of the
+            Output: we extracted values
+            """
+            with tarfile.TarFile(file_loc) as archive:
+                archive.extractall(file_extract)
+
+        def extract_7z(file_extract:str, file_loc:str):
+            """
+            Function to extract 7z archive
+            Input:  file_extract = path where to store the 
+                    file_loc = path to the file of the
+            Output: we extracted values
+            """
+            with py7zr.SevenZipFile(file_loc) as archive:
+                archive.extractall(file_extract)
+
         self.create_folder(self.folder_arc_input)
         self.create_folder(self.folder_arc_extract)
-        file_name_new = f"{self.create_name_unc('_')}{value_file_name}"
-        file_loc = os.path.join(self.folder_arc_extract, file_name_new)
-        file_extract = os.path.join(self.folder_arc_extract, file_name_new)
-        with open(file_loc, 'wb') as tst_bytes_io:
-            tst_bytes_io.write(bytes_io)
-        if zipfile.is_zipfile(file_loc):
-            with zipfile.ZipFile(file_loc) as archive:
-                for value_name in archive.namelist():
-                    _, value_ext = os.path.splitext(value_name)
-                    if value_ext in list_image_ext:
-                        print(value_name)
-                        print('=======================================')
-                        # file_input = self.get_path(file_extract, value_name)
-                        # file_output_tmp = self.get_path(file_extract, f"{value_page}{value_ext}")
-                        # archive.extract(value_name, file_output)
-                        # self.move_file(file_input, file_output_tmp)
 
+        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name][0]
+        file_loc = os.path.join(self.folder_arc_input, file_folder)
+        file_extract = os.path.join(self.folder_arc_extract, value_file_name)
+        try:
+            if zipfile.is_zipfile(file_loc):
+                extract_zip(file_extract, file_loc)
+            elif tarfile.is_tarfile(file_loc):
+                extract_rar(file_extract, file_loc)
+            elif self.is_7zip(file_loc):
+                extract_7z(file_extract, file_loc)
+            return True, value_file_name
+        except Exception as e:
+            return False, ''
+        return False, ''
+
+    def remove_unnecessary(self, folder_value:str) -> list:
+        """
+        Method which is dedicated to remove unneccessary values
+        Input:  folder_value = folder which is required to see
+        Output: we removed unnecessary values and returned list with the values
+        """
+        folder_required = []
+        self.create_folder(self.folder_arc_extract)
+        folder_check = os.path.join(self.folder_arc_extract, folder_value)
+        for folder_values, _, folder_files in os.walk(folder_check):
+            for folder_file in folder_files:
+                folder_loop = os.path.join(folder_values, folder_file)
+                if not (self.detect_image_ext(folder_loop) and self.detect_image_archive(folder_loop)):
+                    os.remove(folder_loop)
+                else:
+                    folder_required.append(folder_loop)
+        return folder_required
 
     def detect_usage_location(self, value_name_ext:str, value_type:str) -> set:
         """
@@ -255,10 +329,24 @@ class TelegramUsage:
         os.remove(os.path.join(image_folder_path, image_name))
         return new_name
 
+    def save_tmp_archive(self, bytes_io:bytes, value_ext:str='') -> str:
+        """
+        Method which is dedicated to save temporal archive to the server part
+        Input:  bytes_io = bytes of the sent file inside
+                value_ext= file extention of the inserted file
+        Output: we successfully saved the archive to the directory and returned file name of it
+        """
+        value_name_new = f"{self.create_name_unc('')}{value_ext}"
+        value_location = os.path.join(self.folder_arc_input, value_name_new)
+        with open(value_location, 'wb') as bytes_arc:
+            bytes_arc.write(bytes_io)
+        return value_name_new
+
     def save_tmp_file(self, bytes_io:bytes, value_compressed:bool=True, value_ext:str='') -> str:
         """
         Method which is dedicated to save the compressed picture from the telegram
         Input:  bytes_io = byte value of the sent picture
+                value_compressed = boolaen variable which signifies that 
         Output: we successfully saved temporary image and returned name of it
         """
         new_image = Image.open(io.BytesIO(bytes_io))
