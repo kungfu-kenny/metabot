@@ -220,8 +220,12 @@ class TelegramUsage:
 
         self.create_folder(self.folder_arc_input)
         self.create_folder(self.folder_arc_extract)
+        self.create_folder(self.folder_arc_output)
 
-        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name][0]
+        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name]
+        if not file_folder:
+            return False, ''
+        file_folder = file_folder[0]
         file_loc = os.path.join(self.folder_arc_input, file_folder)
         file_extract = os.path.join(self.folder_arc_extract, value_file_name)
         try:
@@ -416,7 +420,10 @@ class TelegramUsage:
         Input:  value_file_name = name of the archive without the ext
         Output: we removed archive from the server
         """
-        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name][0]
+        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name]
+        if not file_folder:
+            return
+        file_folder = file_folder[0]
         os.remove(os.path.join(self.folder_arc_input, file_folder))
 
 
