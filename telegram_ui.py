@@ -160,33 +160,50 @@ def calculate_answer_on_the_buttons(query):
         value_status, value_folder = telegram_us.detect_compability_archive(message_file)
         if value_status:
             list_images = telegram_us.remove_unnecessary(value_folder)
-            list_descriptions = []
             for image_path_name in list_images:
                 image_folder_path, image_name = os.path.split(image_path_name)
                 image_description = telegram_us.produce_file_showings(image_folder_path, image_name)
                 image_description_new = '\n'.join([f"Name: {image_name}", image_description])
                 with open(image_path_name, 'rb') as img_sent:
                     bot.send_photo(data_user, img_sent, caption=image_description_new, reply_to_message_id=message_id)
-            #TODO remove all
+            telegram_us.remove_used(value_folder)
         else:
             bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
+        telegram_us.remove_files(message_file)
 
     if data.startswith(callback_data_delete_f):
         value_sent = data.split(callback_data_delete_f)[-1]
+        message_id, message_file = value_sent.split(callback_separator)
         value_status, value_folder = telegram_us.detect_compability_archive(message_file)
         if value_status:
             list_images = telegram_us.remove_unnecessary(value_folder)
+            telegram_us.delete_necessary(list_images)
+            message_name_zip = telegram_us.extract_necessary(value_folder)
+            message_photo_text = telegram_us.produce_message_photo_text(callback_data_delete_f)
+            with open(message_name_zip, 'rb') as rar_new:
+                bot.send_document(data_user, rar_new, caption=message_photo_text, reply_to_message_id=message_id)
+            telegram_us.remove_used(value_folder)
+            os.remove(message_name_zip)
         else:
             bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
+        telegram_us.remove_files(message_file)
 
     if data.startswith(callback_data_update_f):
         value_sent = data.split(callback_data_update_f)[-1]
+        message_id, message_file = value_sent.split(callback_separator)
         value_status, value_folder = telegram_us.detect_compability_archive(message_file)
         if value_status:
             list_images = telegram_us.remove_unnecessary(value_folder)
+            telegram_us.update_necessary(list_images)
+            message_name_zip = telegram_us.extract_necessary(value_folder)
+            message_photo_text = telegram_us.produce_message_photo_text(callback_data_update_f)
+            with open(message_name_zip, 'rb') as rar_new:
+                bot.send_document(data_user, rar_new, caption=message_photo_text, reply_to_message_id=message_id)
+            telegram_us.remove_used(value_folder)
+            os.remove(message_name_zip)
         else:
             bot.send_message(data_user, text='We found problems with the archive', reply_to_message_id=message_id)
-
+        telegram_us.remove_files(message_file)
 
 
 if __name__ == '__main__':

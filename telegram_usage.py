@@ -1,8 +1,10 @@
+from ntpath import join
 import os
 import io
 import py7zr
 import tarfile
 import zipfile
+import shutil
 from PIL import Image
 from uuid import uuid4
 from image_parser import ImageParser
@@ -252,6 +254,41 @@ class TelegramUsage:
                     folder_required.append(folder_loop)
         return folder_required
 
+    def delete_necessary(self, list_images:list) -> None:
+        """
+        Method which is dedicated to remove metatags from the 
+        Input:  list_images = list with the abs pathes to the images
+        Output: we deleted all metatags from the files
+        """
+        list_output = [os.path.split(f) for f in list_images]
+        for input_path, input_name in list_output:
+            self.image_parser.produce_file_delete(input_name, input_path, input_path)
+
+    def update_necessary(self, list_images:list) -> None:
+        """
+        Method which is dedicated to update pictures with selected metatags
+        Input:  list_images = list with the images wi
+        Output: we updated all metatags from the files 
+        """
+        list_output = [os.path.split(f) for f in list_images]
+        for input_path, input_name in list_output:
+            self.image_parser.produce_file_update(input_name, input_path, input_path)
+
+    def extract_necessary(self, value_folder:str) -> str:
+        """
+        Method which is dedicated to make the new archive and return the string to it
+        Input:  value_folder = name of the folder
+        Output: we make the archive with the photos via the zip file
+        """
+        value_name_arc = f"{value_folder}.zip"
+        value_folder_path = os.path.join(self.folder_arc_extract, value_folder)
+        value_folder_arc = os.path.join(self.folder_arc_output, value_name_arc)
+        with zipfile.ZipFile(value_folder_arc, 'w', zipfile.ZIP_DEFLATED) as new_arc:
+            for root, _, files in os.walk(value_folder_path):
+                for file in files:
+                    new_arc.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(value_folder_path, '..')))
+        return value_folder_arc
+
     def detect_usage_location(self, value_name_ext:str, value_type:str) -> set:
         """
         Method which is dedicated to return set with name and its folder
@@ -286,6 +323,12 @@ class TelegramUsage:
             return "We checked the uncompressed image and removed the metatags in additional cases"
         if value_type == callback_data_show_un:
             return "Let's see the values of the metatags of the analysed uncompressed image"
+        if value_type == callback_data_show_f:
+            return "Let's show metatags from the images in the archive"
+        if value_type == callback_data_update_f:
+            return "Let's updated all images within the archive"
+        if value_type == callback_data_delete_f:
+            return "Let's delete metatags from the images in the archive"
         return "Check values"
         
     def produce_file_update(self, image_folder_path:str, image_name:str) -> str:
@@ -359,7 +402,23 @@ class TelegramUsage:
         new_image.save(os.path.join(folder_used, value_name))
         return value_name
 
+    def remove_used(self, value_path:str) -> None:
+        """
+        Static method which is dedicated to remove unpacked directory
+        Input:  value_path = path with the archives to remove
+        Output: we removed unarchived values
+        """
+        shutil.rmtree(os.path.join(self.folder_arc_extract, value_path))
+
+    def remove_files(self, value_file_name:str) -> None:
+        """
+        Method which is dedicated to remove all files
+        Input:  value_file_name = name of the archive without the ext
+        Output: we removed archive from the server
+        """
+        file_folder = [f for f in os.listdir(self.folder_arc_input) if os.path.splitext(f)[0]==value_file_name][0]
+        os.remove(os.path.join(self.folder_arc_input, file_folder))
+
 
 if __name__ == '__main__':
     a = TelegramUsage()
-    a.make_file_output('E:\Projects\\folder_metadata\img_input', 'photo_2021-06-25_13-27-25.jpg', 'tst')
