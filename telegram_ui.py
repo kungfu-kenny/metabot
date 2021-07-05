@@ -52,7 +52,9 @@ def take_photo_uncompressed(message) -> None:
             value_examine = f'{callback_data_show_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
             value_update = f'{callback_data_update_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
             value_delete = f'{callback_data_delete_un}{message.message_id}{callback_separator}{os.path.splitext(value_photo)[0]}'
-
+            print(value_delete)
+            print(value_examine)
+            print(value_update)
             keyboard = telebot.types.InlineKeyboardMarkup()
             keyboard.row(telebot.types.InlineKeyboardButton('Analyse Tags', callback_data=value_examine))
             keyboard.row(telebot.types.InlineKeyboardButton('Update Tags', callback_data=value_update),
@@ -72,10 +74,8 @@ def take_photo_uncompressed(message) -> None:
             bot.reply_to(message, 'Select command what to do with a file:', reply_markup=keyboard)
         else: 
             bot.reply_to(message, f"Unfortunatelly we faced several problems with sent file {file_name}. It seems to be broken")
-            return
     else:
         bot.reply_to(message, "Unfortunatelly it's not seems like the image file. It is seen by an extention")
-        return
 
 @bot.callback_query_handler(func=lambda call: True)
 def calculate_answer_on_the_buttons(query):
@@ -86,6 +86,9 @@ def calculate_answer_on_the_buttons(query):
         value_sent = data.split(callback_data_update)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_update)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the picture', reply_to_message_id=message_id)
+            return
         message_photo_out = telegram_us.produce_file_update(message_photo_path, message_photo_name)
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_update)
         message_name_zip = telegram_us.create_name_unc('')
@@ -99,6 +102,9 @@ def calculate_answer_on_the_buttons(query):
         value_sent = data.split(callback_data_show)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_show)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the picture', reply_to_message_id=message_id)
+            return
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_show)
         message_photo_analysis = telegram_us.produce_file_showings(message_photo_path, message_photo_name)
         bot.send_message(data_user, text=message_photo_text, reply_to_message_id=message_id)
@@ -109,6 +115,9 @@ def calculate_answer_on_the_buttons(query):
         value_sent = data.split(callback_data_delete)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_delete)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the picture', reply_to_message_id=message_id)
+            return
         message_photo_out = telegram_us.produce_file_delete(message_photo_path, message_photo_name)
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_delete)
         message_name_zip = telegram_us.create_name_unc('')
@@ -119,9 +128,12 @@ def calculate_answer_on_the_buttons(query):
         os.remove(os.path.join(message_loc_zip, message_name_zip))
         
     if data.startswith(callback_data_update_un):
-        value_sent = data.split(callback_data_update)[-1]
+        value_sent = data.split(callback_data_update_un)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_update_un)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the file picture', reply_to_message_id=message_id)
+            return
         message_photo_out = telegram_us.produce_file_update(message_photo_path, message_photo_name)
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_update_un)
         message_name_zip = telegram_us.create_name_unc('')
@@ -132,9 +144,12 @@ def calculate_answer_on_the_buttons(query):
         os.remove(os.path.join(message_loc_zip, message_name_zip))        
 
     if data.startswith(callback_data_delete_un):
-        value_sent = data.split(callback_data_delete)[-1]
+        value_sent = data.split(callback_data_delete_un)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_delete_un)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the file picture', reply_to_message_id=message_id)
+            return
         message_photo_out = telegram_us.produce_file_delete(message_photo_path, message_photo_name)
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_delete_un)
         message_name_zip = telegram_us.create_name_unc('')
@@ -148,6 +163,9 @@ def calculate_answer_on_the_buttons(query):
         value_sent = data.split(callback_data_show_un)[-1]
         message_id, message_photo = value_sent.split(callback_separator)
         message_photo_name, message_photo_path = telegram_us.detect_usage_location(message_photo, callback_data_show_un)
+        if not message_photo_name and not message_photo_path:
+            bot.send_message(data_user, text='You need to resent the file picture', reply_to_message_id=message_id)
+            return
         message_photo_text = telegram_us.produce_message_photo_text(callback_data_show_un)
         message_photo_analysis = telegram_us.produce_file_showings(message_photo_path, message_photo_name)
         bot.send_message(data_user, text=message_photo_text, reply_to_message_id=message_id)

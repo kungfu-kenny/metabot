@@ -308,6 +308,7 @@ class TelegramUsage:
             for value_name in os.listdir(self.folder_tmp_unc):
                 if os.path.splitext(value_name)[0] == value_name_ext:
                     return value_name, self.folder_tmp_unc
+        return '', ''
     
     def produce_message_photo_text(self, value_type:str) -> str:
         """
